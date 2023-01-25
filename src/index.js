@@ -42,14 +42,14 @@ const checkAuth = (req, res, next) => {
 };
 
 const updateDb = (newUsers, newPosts, newSessions) => {
-  const { users, socialPosts: posts, sessions } = store;
+  const { users, socialPosts, sessions } = store;
   const db = {
     users: newUsers || users,
-    socialPosts: newPosts || posts,
+    socialPosts: newPosts || socialPosts,
     sessions: newSessions || sessions,
   };
 
-  store.socialPosts = db.posts;
+  store.socialPosts = db.socialPosts;
   store.users = db.users;
   store.sessions = db.sessions;
 
@@ -57,6 +57,7 @@ const updateDb = (newUsers, newPosts, newSessions) => {
   const data = JSON.stringify(db, null, 2);
   fs.writeFileSync(filePath, data);
 }
+
 
 const addToSessions = (session) => {
   const { sessions } = store;
