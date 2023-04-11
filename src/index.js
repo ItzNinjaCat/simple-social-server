@@ -1,12 +1,12 @@
 const express = require("express");
 const { json, urlencoded } = require("body-parser");
 const { randomBytes } = require("crypto");
-const  cookies = require("cookie-parser");
+const cookies = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
 const db = require("../db.json");
-const port =  process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 const app = express();
 
 // Store
@@ -16,13 +16,19 @@ const store = {
   sessions: db.sessions,
 };
 
+const whitelist = ["http://localhost:3001"]
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error("Not allowed by CORS"))
+    }
+  },
+  credentials: true,
+}))
 app.use(json()); // for parsing application/json
 app.use(urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-app.use(
-  cors({
-    origin: "*",
-  })
-  );
 app.use(cookies());
 
 const checkAuth = (req, res, next) => {
@@ -34,7 +40,7 @@ const checkAuth = (req, res, next) => {
   const { sessions } = store;
   const session = sessions.find(session => session.id === sessionId);
   if (!session) {
-    return res.status(401).send({ error: 'Not authorized'});
+    return res.status(401).send({ error: 'Not authorized' });
   }
 
   req.userId = session.userId;
@@ -73,7 +79,6 @@ const removeFromSessions = (sessionId) => {
 
 app.get('/', (req, res) => res.send('Welcome to the Simple Social media API!'));
 
-// register
 app.post("/register", (req, res) => {
   const { name } = req.body;
 
@@ -98,12 +103,17 @@ app.post("/login", (req, res) => {
   const { name } = req.body;
   const { users } = store;
   const user = users.find(user => user.name === name);
+
   if (!user) {
     return res.status(404).send();
   }
 
-  if (store.sessions.find(session => session.userId === user.id)) {
-    return res.status(400).send({ error: "User already logged in" });
+  const { sessions } = store;
+  const sessionExist = sessions.find(session => session.userId === user.id);
+  if (sessionExist) {
+    res.cookie("sessionId", sessionExist.id, { httpOnly: true, expires: new Date(Date.now() + 900000) });
+    res.status(200).send();
+    return;
   }
 
   const session = {
@@ -112,7 +122,7 @@ app.post("/login", (req, res) => {
   };
 
   addToSessions(session);
-  res.cookie("sessionId", session.id, { httpOnly: true });
+  res.cookie("sessionId", session.id, { httpOnly: true, expires: new Date(Date.now() + 900000) });
   res.status(201).send(session);
 });
 
@@ -147,7 +157,7 @@ app.get("/posts", checkAuth, (req, res) => {
     return postCopy;
   });
 
-  res.send(posts);
+  res.send(posts || []);
 });
 
 app.get("/posts/:id", checkAuth, (req, res) => {
@@ -161,23 +171,26 @@ app.get("/posts/:id", checkAuth, (req, res) => {
   res.send(post);
 });
 
-app.get("/posts/:id/like", checkAuth, (req, res) => {
+app.post("/posts/:id/like", checkAuth, (req, res) => {
   // like a post
   const { id } = req.params;
   const { socialPosts } = store;
+  // update a post likes
+
   const post = socialPosts.find(post => post.id === id);
   if (!post) {
     return res.status(404).send();
   }
 
-  const { likes } = post;
   const { userId } = req;
-  if (likes.includes(userId)) {
-    return res.status(400).send({ error: "Post already liked" });
+  const { likes } = post;
+  const like = likes.find(like => like === userId);
+  if (like) {
+    return res.status(400).send({ error: "You already liked this post" });
   }
 
   likes.push(userId);
-  updateDb(null, socialPosts);
+  updateDb(null, socialPosts, null);
   res.status(201).send();
 });
 
@@ -197,7 +210,7 @@ app.post("/posts", checkAuth, (req, res) => {
 
   const { socialPosts } = store;
   socialPosts.push(post);
-  updateDb(null, socialPosts);
+  updateDb(null, socialPosts, null);
   res.status(201).send(post);
 });
 
@@ -213,7 +226,7 @@ app.delete("/posts/:id", checkAuth, (req, res) => {
   if (post.userId !== req.userId) {
     return res.status(401).send({ error: "Not authorized" });
   }
-  
+
 
   const newPosts = socialPosts.filter(post => post.id !== id);
   updateDb(null, newPosts);
