@@ -152,7 +152,7 @@ app.get("/posts", checkAuth, (req, res) => {
     const user = users.find(user => user.id === post.userId);
     postCopy = { ...post };
     postCopy.userName = user.name;
-    postCopy.likes = postCopy.likes?.length ?? 0;
+    postCopy.likes = postCopy.likes;
     delete postCopy.userId;
     return postCopy;
   });
@@ -194,6 +194,30 @@ app.post("/posts/:id/like", checkAuth, (req, res) => {
   res.status(201).send();
 });
 
+app.post("/posts/:id/unlike", checkAuth, (req, res) => {
+  // unlike a post
+  const { id } = req.params;
+  const { socialPosts } = store;
+  // update a post likes
+
+  const post = socialPosts.find(post => post.id === id);
+  if (!post) {
+    return res.status(404).send();
+  }
+
+  const { userId } = req;
+  const { likes } = post;
+  const like = likes.find(like => like === userId);
+  if (!like) {
+    return res.status(400).send({ error: "You have not liked this post" });
+  }
+  
+  const newLikes = likes.filter(like => like !== userId);
+  post.likes = newLikes;
+  updateDb(null, socialPosts, null);
+  res.status(201).send();
+});
+
 app.post("/posts", checkAuth, (req, res) => {
   const { userId } = req;
   const { content } = req.body;
@@ -231,6 +255,16 @@ app.delete("/posts/:id", checkAuth, (req, res) => {
   const newPosts = socialPosts.filter(post => post.id !== id);
   updateDb(null, newPosts);
   res.status(201).send();
+});
+
+app.get("/auth", checkAuth, (req, res) => {
+  const { userId } = req;
+  const { users } = store;
+  const user = users.find(user => user.id === userId);
+  if(!user) {
+    return res.status(404).send();
+  }
+  res.send(user);
 });
 
 app.listen(port, () => {

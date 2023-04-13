@@ -1,13 +1,15 @@
 import Container from "react-bootstrap/Container";
-import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import React, { useState, useEffect, useRef } from "react";
-
-function Header({ isLoggedIn }) {
+import RegisterModal from "./RegisterModal";
+import LoginModal from "./LoginModal";
+import { useEffect, useRef } from "react";
+import { useContext } from "react";
+import ReRenderContext from "../context";
+import CreatePostModal from "./CreatePostModal";
+function Header() {
+    const { isLoggedIn, setIsLoggedIn, user } = useContext(ReRenderContext);
     const navRef = useRef(null);
     useEffect(() => {
         var prevScrollpos = window.pageYOffset;
@@ -21,6 +23,19 @@ function Header({ isLoggedIn }) {
             prevScrollpos = currentScrollPos;
         };
     }, []);
+
+    const logOut = () => {
+        fetch("http://localhost:3000/logout", {
+            method: "POST",
+            credentials: "include",
+        })
+            .then((res) => {
+                setIsLoggedIn(false);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    };
     return (
         <Navbar
             bg="light"
@@ -31,7 +46,7 @@ function Header({ isLoggedIn }) {
         >
             <Container fluid>
                 <Navbar.Brand href="/">
-                    Decentralized ticketing system
+                    Simple social server
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="navBar" />
                 <Navbar.Offcanvas
@@ -41,16 +56,26 @@ function Header({ isLoggedIn }) {
                 >
                     <Offcanvas.Header closeButton>
                         <Offcanvas.Title id="navBar">
-                            Decentralized ticketing system
+                            Simple social server
                         </Offcanvas.Title>
                     </Offcanvas.Header>
-                    <Offcanvas.Body>
+                    <Offcanvas.Body  className="align-items-center justify-content-end">
+                        <div className="flex-grow-1 ms-3">
+                            {isLoggedIn ? <CreatePostModal/> : null}
+                        </div>
                         {isLoggedIn ? (
-                            <Button>Logout</Button>
+                            <div className="header-register d-flex justify-content-between me-3 align-items-center">
+                                <div className="flex-grow-1 text-nowrap overflow-hidden text-truncate me-3">
+                                    <span className="ms-n3 fw-bold">
+                                        {user.name}
+                                    </span>
+                                </div>
+                                <Button onClick={logOut}>Logout</Button>
+                            </div>
                         ) : (
-                            <div>
-                                <Button>Login</Button>
-                                <Button>Register</Button>
+                            <div className="header-register d-flex justify-content-between me-3">
+                                <LoginModal/>
+                                <RegisterModal />
                             </div>
                         )}
                     </Offcanvas.Body>
