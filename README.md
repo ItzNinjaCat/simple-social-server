@@ -2,7 +2,7 @@
 
 Super simple social app for learning purposes
 
-##Backend
+## Backend
 
 ### Navigation
 ```bash
@@ -17,7 +17,7 @@ npm install
 ```bash
 npm start
 ``` 
-##Frontend
+## Frontend
 ### Navigation
 ```bash
 cd ./frontend
