@@ -54,8 +54,8 @@ function Post({ post }) {
         }
     };
 
-    const handleDoubleTap = (e) => {
-        if(e.detail  === 2){
+    const handleDoubleTap = () => {
+        if(!showDelete){
             changeLikeStatus();
         }
     };
@@ -98,17 +98,26 @@ function Post({ post }) {
 
     const heartAnimation = useSpring({
         from: { transform: 'scale(1)' },
-        to: { transform: isExpanded ? 'scale(1.3)' : 'scale(1)' },
+        to: { transform: isExpanded ? 'scale(2)' : 'scale(1)' },
     });
   
-    const buttonLike = () => {
+    const buttonLike = (e) => {
+        e.stopPropagation();
         changeLikeStatus();
     }
 
+    const deleteButton = (e) => {
+        e.stopPropagation();
+        setShowDelete(true);
+    }
+
     return (
-      <div onClick={handleDoubleTap} className="post-card user-select-none">
+      <div onDoubleClick={handleDoubleTap} className="post-card user-select-none">
         <div className='d-flex justify-content-between m-auto'>
             <span>
+                <span className="ms-n3 fw-bold">
+                    {post.userName}
+                </span>
                 <h3>{post.content}</h3>
                 <p className='text-break desc-text mt-2'>Likes: {post.likes?.length ?? 0}</p>
             </span>
@@ -118,13 +127,11 @@ function Post({ post }) {
                 </animated.div>
                 {
                     user.name === post.userName ? 
-                    <>
-                        <Button variant='danger' className='my-1' onClick={() => setShowDelete(true)}>Delete</Button>
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <Button variant='danger' className='my-1' onClick={deleteButton}>Delete</Button>
                         <Modal
                             show={showDelete}
                             onHide={() => setShowDelete(false)}
-                            backdrop="static"
-                            keyboard={false}
                         >
                             <Modal.Header closeButton>
                                 <Modal.Title>Delete Post</Modal.Title>
@@ -141,7 +148,7 @@ function Post({ post }) {
                                 </Button>
                             </Modal.Footer>
                         </Modal>
-                    </>
+                    </div>
                     : null
                 }
             </div>

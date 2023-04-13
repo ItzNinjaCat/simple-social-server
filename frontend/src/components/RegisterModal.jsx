@@ -8,7 +8,10 @@ function RegisterModal(){
     const {setIsLoggedIn} = useContext(ReRenderContext);
     const [show, setShow] = useState(false);
     const [username, setUsername] = useState("");
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setShow(false);
+        setUsername("");
+    }
     const handleShow = () => setShow(true);
     const handleRegister = (e) => {
         e.preventDefault();
@@ -56,7 +59,6 @@ function RegisterModal(){
                 show={show}
                 onHide={handleClose}
                 backdrop="static"
-                keyboard={false}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Register</Modal.Title>
@@ -74,16 +76,11 @@ function RegisterModal(){
                                 value={username}
                             />
                         </Form.Group>
-                        <Button variant="primary" type="submit">
+                        <Button variant="primary" type="submit" disabled={username.length < 5}>
                             Register
                         </Button>
                     </Form>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                </Modal.Footer>
             </Modal>
         </>
     )

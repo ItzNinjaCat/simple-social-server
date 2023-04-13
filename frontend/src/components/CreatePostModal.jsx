@@ -8,7 +8,10 @@ function CreatePostModal(){
     const [show, setShow] = useState(false);
     const [content, setContent] = useState("");
     
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setShow(false);
+        setContent("");
+    }
     const handleShow = () => setShow(true);
 
     const handleCreatePost = (e) => {
@@ -25,8 +28,7 @@ function CreatePostModal(){
         })
         .then((res) => {
             handleClose();
-            res.json().then((resData) => {
-                console.log(resData);
+            res.json().then(() => {
                 handleNotificationClick("Post created successfully");
                 fetchPosts();
             });
@@ -48,7 +50,6 @@ function CreatePostModal(){
                 show={show}
                 onHide={handleClose}
                 backdrop="static"
-                keyboard={false}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Create Post</Modal.Title>
@@ -66,7 +67,7 @@ function CreatePostModal(){
                                 value={content}
                             />
                         </Form.Group>
-                        <Button variant="primary" type="submit">
+                        <Button variant="primary" type="submit" disabled={content.length < 4}>
                             Create Post
                         </Button>
                     </Form>

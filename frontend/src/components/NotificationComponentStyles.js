@@ -1,20 +1,9 @@
 import styled from 'styled-components';
-import { animated } from '@react-spring/web';
-
-export const Main = styled.div`
-  cursor: pointer;
-  color: #676767;
-  -webkit-user-select: none;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  height: 100%;
-  justify-content: center;
-`;
+import { animated } from 'react-spring';
 
 export const Container = styled.div`
   position: fixed;
-  z-index: 1000;
+  z-index: 100000;
   width: 0 auto;
   bottom: 30px;
   margin: 0 auto;

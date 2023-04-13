@@ -5,10 +5,13 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import ReRenderContext from '../context';
 function LoginModal(){
-    const {setIsLoggedIn} = useContext(ReRenderContext);
+    const {setIsLoggedIn, handleNotificationClick} = useContext(ReRenderContext);
     const [show, setShow] = useState(false);
     const [username, setUsername] = useState("");
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setShow(false);
+        setUsername("");
+    }
     const handleShow = () => setShow(true);
     const handleLogin = (e) => {
         e.preventDefault();
@@ -23,8 +26,13 @@ function LoginModal(){
             }),
         })
             .then((res) => {
-                handleClose();
-                setIsLoggedIn(true);
+                if(res.status === 404){
+                    handleNotificationClick("Invalid username");
+                }
+                else{
+                    handleClose();
+                    setIsLoggedIn(true);
+                }
             })
             .catch((err) => {
                 console.log(err);
@@ -41,7 +49,6 @@ function LoginModal(){
                 show={show}
                 onHide={handleClose}
                 backdrop="static"
-                keyboard={false}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Login</Modal.Title>
@@ -59,16 +66,11 @@ function LoginModal(){
                                 value={username}
                             />
                         </Form.Group>
-                        <Button variant="primary" type="submit">
+                        <Button variant="primary" type="submit" disabled={username.length < 5}>
                             Login
                         </Button>
                     </Form>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                </Modal.Footer>
             </Modal>
         </>
     )
