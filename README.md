@@ -1,6 +1,7 @@
 # simple-social-server
 
 Super simple social app for learning purposes
+
 ##Backend
 
 ### Navigation
@@ -8,31 +9,24 @@ Super simple social app for learning purposes
 cd ./backend
 ```
 ### Installation
-
 ```bash
 npm install
 ```
 
 ### Usage
-
 ```bash
 npm start
 ``` 
-
 ##Frontend
-
 ### Navigation
 ```bash
 cd ./frontend
 ```
 ### Installation
-
 ```bash
 yarn
 ```
-
 ### Usage
-
 ```bash
 yarn dev
 ``` 
